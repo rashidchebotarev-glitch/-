@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
+import { MarketHighlights } from '../components/MarketHighlights';
 import { QuoteCard } from '../components/QuoteCard';
+import marketHero from '../assets/market-hero.png';
 import { formatChange, initialQuotes, moveMarket, movePrice } from '../lib/market';
 import { initialPortfolio, tradeStock, type TradeAction } from '../lib/portfolio';
 
@@ -30,10 +32,18 @@ export function HomePage() {
       <header className="market-header"><span className="market-logo">NORTH<span>•</span>MARKET</span><span className="market-status">● Рынок открыт · LIVE</span></header>
       {!started ? (
         <section className="market-welcome">
-          <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
-          <h1>Следи за<br /><em>рынком.</em></h1>
-          <p>Котировки, динамика и всё важное — в одном понятном месте.</p>
-          <button className="start-button" onClick={() => setStarted(true)}>Начать <span>→</span></button>
+          <div className="welcome-content">
+            <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
+            <h1>Следи за<br /><em>рынком.</em></h1>
+            <p>Котировки, динамика и всё важное — в одном понятном месте.</p>
+            <button className="start-button" onClick={() => setStarted(true)}>Начать <span>→</span></button>
+            <MarketHighlights />
+          </div>
+          <div className="hero-visual">
+            <img className="market-hero-image" src={marketHero} alt="Абстрактная иллюстрация движения рынка" />
+            <div className="hero-price-tag"><span>MARKET PULSE</span><strong>+0.62%</strong><small>сегодня</small></div>
+            <div className="hero-caption"><span>●</span> Данные симулируются</div>
+          </div>
         </section>
       ) : (
         <section className="market-dashboard">

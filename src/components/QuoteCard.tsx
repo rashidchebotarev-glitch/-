@@ -16,7 +16,7 @@ export function QuoteCard({ onTrade, quote, shares }: QuoteCardProps) {
       <div>
         <Link className="quote-company" href={`/stocks/${quote.symbol}`}>
           <strong>{quote.symbol}</strong>
-          <span>{quote.name} · Прогноз →</span>
+          <span>{quote.name} · {quote.exchange} · Прогноз →</span>
         </Link>
         <small>В портфеле: {shares} шт.</small>
       </div>

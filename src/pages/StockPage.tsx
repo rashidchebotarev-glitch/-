@@ -40,7 +40,7 @@ export function StockPage() {
         <Link className="back-link" href="/">← Все котировки</Link>
         <p className="market-kicker">СТРАНИЦА КОМПАНИИ</p>
         <h1>{quote.symbol}</h1>
-        <p className="stock-name">{quote.name}</p>
+        <p className="stock-name">{quote.name} · {quote.exchange}</p>
         <article className="stock-price">
           <span>ТЕКУЩАЯ ЦЕНА · ОБНОВЛЯЕТСЯ КАЖДУЮ СЕКУНДУ</span>
           <strong>${quote.price.toFixed(2)}</strong>
