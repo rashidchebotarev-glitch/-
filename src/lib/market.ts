@@ -7,6 +7,7 @@ export type MarketQuote = {
 };
 
 export const initialQuotes: MarketQuote[] = [
+  { symbol: 'SPY', name: 'S&P 500 ETF', exchange: 'NYSE Arca', price: 546.93, startingPrice: 546.93 },
   { symbol: 'AAPL', name: 'Apple Inc.', exchange: 'NASDAQ', price: 218.42, startingPrice: 218.42 },
   { symbol: 'NVDA', name: 'NVIDIA Corp.', exchange: 'NASDAQ', price: 142.18, startingPrice: 142.18 },
   { symbol: 'TSLA', name: 'Tesla Inc.', exchange: 'NASDAQ', price: 248.76, startingPrice: 248.76 },
