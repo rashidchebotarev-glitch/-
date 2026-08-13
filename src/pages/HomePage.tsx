@@ -131,7 +131,7 @@ export function HomePage() {
             <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
             <h1>Следи за<br /><em>рынком.</em></h1>
             <p>Котировки, динамика и всё важное — в одном понятном месте.</p>
-            <button className="start-button" onClick={startSimulation}>Начать <span>→</span></button>
+            <button className="start-button" onClick={startSimulation}>Начать игру <span>→</span></button>
             <Link className="registration-button" href="/auth">Регистрация</Link>
             <p className="registration-tip">✨ Зарегистрируйся, чтобы открыть акции Китая и Японии</p>
             <p className="sound-tip">🔊 Совет: играй со звуком</p>
