@@ -1,14 +1,17 @@
 type CoachFireProps = {
   canSellForProfit: boolean;
+  isTrainingComplete: boolean;
   day: number;
   hasBoughtSpy: boolean;
   portfolioValue: number;
 };
 
-export function CoachFire({ canSellForProfit, day, hasBoughtSpy, portfolioValue }: CoachFireProps) {
+export function CoachFire({ canSellForProfit, day, hasBoughtSpy, isTrainingComplete, portfolioValue }: CoachFireProps) {
   const hasReachedGoal = portfolioValue >= 15000;
   const tip = hasReachedGoal
     ? 'Ты достиг цели! Теперь попробуй сохранить прибыль и не покупай всё сразу.'
+    : isTrainingComplete
+      ? 'Тренировка пройдена! Теперь ты можешь покупать и продавать любые акции сам.'
     : !hasBoughtSpy
       ? 'Твой первый шаг: нажми подсвеченную кнопку «Купить 1» у S&P 500 ниже.'
       : canSellForProfit
@@ -23,8 +26,8 @@ export function CoachFire({ canSellForProfit, day, hasBoughtSpy, portfolioValue 
       <div>
         <p>ТРЕНЕР ОГОНЁК</p>
         <strong>{tip}</strong>
-        {!hasBoughtSpy && <span className="coach-arrow">↓ КУПИТЬ НИЖЕ</span>}
-        {hasBoughtSpy && canSellForProfit && <span className="coach-arrow">↓ ПРОДАТЬ НИЖЕ</span>}
+        {!isTrainingComplete && !hasBoughtSpy && <span className="coach-arrow">↓ КУПИТЬ НИЖЕ</span>}
+        {!isTrainingComplete && hasBoughtSpy && canSellForProfit && <span className="coach-arrow">↓ ПРОДАТЬ НИЖЕ</span>}
       </div>
     </aside>
   );

@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'wouter';
 import { CoachFire } from '../components/CoachFire';
 import { DayTransition } from '../components/DayTransition';
+import { GameOverScreen } from '../components/GameOverScreen';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
 import { QuoteCard } from '../components/QuoteCard';
 import { SimulationPanel } from '../components/SimulationPanel';
 import rashidMug from '../assets/rashid-mug.png';
-import { formatChange, initialQuotes, moveMarket, movePrice } from '../lib/market';
+import { formatChange, initialQuotes, memberQuotes, moveMarket, movePrice } from '../lib/market';
 import { initialPortfolio, tradeStock, type TradeAction } from '../lib/portfolio';
 import { playBuySound, playEnterSound, playSellSound } from '../lib/sounds';
+import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
   const [quotes, setQuotes] = useState(initialQuotes);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [indexPrice, setIndexPrice] = useState(5469.3);
   const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [tradeMessage, setTradeMessage] = useState('Готов к первой сделке');
   const [day, setDay] = useState(1);
   const [isDayTransitionVisible, setIsDayTransitionVisible] = useState(false);
+  const [isGameOver, setIsGameOver] = useState(false);
   const [spyBuyPrice, setSpyBuyPrice] = useState<number | null>(null);
+  const [isTrainingComplete, setIsTrainingComplete] = useState(false);
 
   useEffect(() => {
     const marketTimer = window.setInterval(() => {
@@ -28,6 +34,24 @@ export function HomePage() {
 
     return () => window.clearInterval(marketTimer);
   }, []);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    supabase.auth.getSession().then(({ data }) => setIsRegistered(data.session !== null));
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsRegistered(session !== null);
+    });
+
+    return () => listener.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!isRegistered) return;
+    setQuotes((currentQuotes) => currentQuotes.length === initialQuotes.length
+      ? [...currentQuotes, ...memberQuotes]
+      : currentQuotes);
+  }, [isRegistered]);
 
   useEffect(() => {
     const dayTimer = window.setInterval(() => {
@@ -62,6 +86,7 @@ export function HomePage() {
     }
     if (quote.symbol === 'SPY' && action === 'sell' && result.portfolio !== portfolio && (result.portfolio.holdings.SPY ?? 0) === 0) {
       setSpyBuyPrice(null);
+      setIsTrainingComplete(true);
     }
     if (result.portfolio !== portfolio) {
       if (action === 'buy') playBuySound();
@@ -81,9 +106,24 @@ export function HomePage() {
   const spyQuote = quotes.find((quote) => quote.symbol === 'SPY');
   const canSellSpyForProfit = spyBuyPrice !== null && spyQuote !== undefined && spyQuote.price > spyBuyPrice;
 
+  useEffect(() => {
+    if (day >= 5 && portfolioValue < 15000) setIsGameOver(true);
+  }, [day, portfolioValue]);
+
+  function restartSimulation() {
+    setDay(1);
+    setPortfolio(initialPortfolio);
+    setSpyBuyPrice(null);
+    setIsTrainingComplete(false);
+    setTradeMessage('Готов к первой сделке');
+    setIsGameOver(false);
+  }
+
   return (
     <main className="market-page">
+      <div className="background-orbs" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <DayTransition day={day} isVisible={isDayTransitionVisible} />
+      {isGameOver && <GameOverScreen onRestart={restartSimulation} portfolioValue={portfolioValue} />}
       <header className="market-header"><span className="market-logo">NORTH<span>•</span>MARKET</span><span className="market-status">● Рынок открыт · LIVE</span></header>
       {!started ? (
         <section className="market-welcome">
@@ -92,6 +132,8 @@ export function HomePage() {
             <h1>Следи за<br /><em>рынком.</em></h1>
             <p>Котировки, динамика и всё важное — в одном понятном месте.</p>
             <button className="start-button" onClick={startSimulation}>Начать <span>→</span></button>
+            <Link className="registration-button" href="/auth">Регистрация</Link>
+            <p className="registration-tip">✨ Зарегистрируйся, чтобы открыть акции Китая и Японии</p>
             <p className="sound-tip">🔊 Совет: играй со звуком</p>
             <MarketHighlights />
           </div>
@@ -106,8 +148,8 @@ export function HomePage() {
           </div>
           <MarketIndicator price={indexPrice} />
           <SimulationPanel day={day} portfolioValue={portfolioValue} />
-          <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} portfolioValue={portfolioValue} />
-          <section className="quotes"><h2>Котировки</h2>{quotes.map((quote) => <QuoteCard coachAction={quote.symbol !== 'SPY' ? null : (portfolio.holdings.SPY ?? 0) === 0 ? 'buy' : canSellSpyForProfit ? 'sell' : null} key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}</section>
+          <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} isTrainingComplete={isTrainingComplete} portfolioValue={portfolioValue} />
+          <section className="quotes"><h2>Котировки</h2>{quotes.map((quote) => <QuoteCard coachAction={isTrainingComplete || quote.symbol !== 'SPY' ? null : (portfolio.holdings.SPY ?? 0) === 0 ? 'buy' : canSellSpyForProfit ? 'sell' : null} key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}{isRegistered && <p className="member-market-note">✓ Международный рынок открыт: Китай и Япония</p>}</section>
         </section>
       )}
     </main>

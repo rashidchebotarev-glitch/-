@@ -35,6 +35,20 @@ export function Auth() {
     }
   }
 
+  async function signInWithGoogle() {
+    setBusy(true);
+    setMessage('');
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
+
+    if (error) {
+      setMessage(error.message);
+      setBusy(false);
+    }
+  }
+
   return (
     <section className="card">
       <h2>{mode === 'signin' ? 'Вход' : 'Регистрация'}</h2>
@@ -58,6 +72,10 @@ export function Auth() {
           {busy ? '…' : mode === 'signin' ? 'Войти' : 'Создать аккаунт'}
         </button>
       </form>
+      <div className="auth-divider"><span>или</span></div>
+      <button className="google-button" disabled={busy} onClick={signInWithGoogle} type="button">
+        <span className="google-mark">G</span> Продолжить с Google
+      </button>
       {message && <p className="message">{message}</p>}
       <button
         className="ghost"
