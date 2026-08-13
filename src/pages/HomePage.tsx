@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { CoachFire } from '../components/CoachFire';
+import { AgeSelection } from '../components/AgeSelection';
 import { DayTransition } from '../components/DayTransition';
 import { GameOverScreen } from '../components/GameOverScreen';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
+import { MissionPopup } from '../components/MissionPopup';
 import { QuoteCard } from '../components/QuoteCard';
 import { SimulationPanel } from '../components/SimulationPanel';
 import rashidMug from '../assets/rashid-mug.png';
@@ -15,6 +17,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
+  const [isAgeSelectionVisible, setIsAgeSelectionVisible] = useState(false);
   const [quotes, setQuotes] = useState(initialQuotes);
   const [isRegistered, setIsRegistered] = useState(false);
   const [indexPrice, setIndexPrice] = useState(5469.3);
@@ -23,6 +26,7 @@ export function HomePage() {
   const [day, setDay] = useState(1);
   const [isDayTransitionVisible, setIsDayTransitionVisible] = useState(false);
   const [isGameOver, setIsGameOver] = useState(false);
+  const [isFirstMissionVisible, setIsFirstMissionVisible] = useState(false);
   const [spyBuyPrice, setSpyBuyPrice] = useState<number | null>(null);
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
 
@@ -81,6 +85,7 @@ export function HomePage() {
     const result = tradeStock(portfolio, quote, action);
     setPortfolio(result.portfolio);
     setTradeMessage(result.message);
+    if (action === 'buy' && result.portfolio !== portfolio) setIsFirstMissionVisible(false);
     if (quote.symbol === 'SPY' && action === 'buy' && result.portfolio !== portfolio && spyBuyPrice === null) {
       setSpyBuyPrice(quote.price);
     }
@@ -96,7 +101,13 @@ export function HomePage() {
 
   function startSimulation() {
     playEnterSound();
+    setIsAgeSelectionVisible(true);
+  }
+
+  function selectAge() {
+    setIsAgeSelectionVisible(false);
     setStarted(true);
+    setIsFirstMissionVisible(true);
   }
 
   const portfolioValue = portfolio.balance + quotes.reduce(
@@ -117,6 +128,7 @@ export function HomePage() {
     setIsTrainingComplete(false);
     setTradeMessage('Готов к первой сделке');
     setIsGameOver(false);
+    setIsFirstMissionVisible(true);
   }
 
   return (
@@ -124,8 +136,9 @@ export function HomePage() {
       <div className="background-orbs" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <DayTransition day={day} isVisible={isDayTransitionVisible} />
       {isGameOver && <GameOverScreen onRestart={restartSimulation} portfolioValue={portfolioValue} />}
+      {started && <MissionPopup isVisible={isFirstMissionVisible} onClose={() => setIsFirstMissionVisible(false)} />}
       <header className="market-header"><span className="market-logo">NORTH<span>•</span>MARKET</span><span className="market-status">● Рынок открыт · LIVE</span></header>
-      {!started ? (
+      {!started && !isAgeSelectionVisible ? (
         <section className="market-welcome">
           <div className="welcome-content">
             <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
@@ -139,6 +152,8 @@ export function HomePage() {
           </div>
           <img className="rashid-mug" src={rashidMug} alt="Оранжевая кружка Rashid" />
         </section>
+      ) : isAgeSelectionVisible ? (
+        <AgeSelection onSelect={selectAge} />
       ) : (
         <section className="market-dashboard">
           <div className="market-title"><div><p className="market-kicker">ОБЗОР РЫНКА</p><h1>Сегодня</h1></div><button className="back-button" onClick={() => setStarted(false)}>←</button></div>

@@ -6,7 +6,7 @@ export function MarketHighlights() {
         <div><strong>LIVE</strong><small>обновление 1 сек.</small></div>
       </article>
       <article>
-        <strong>11</strong><small>активов для старта</small>
+        <strong>21</strong><small>актив для старта</small>
       </article>
       <article>
         <strong>$10K</strong><small>учебный баланс</small>

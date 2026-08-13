@@ -19,6 +19,16 @@ export const initialQuotes: MarketQuote[] = [
   { symbol: 'NFLX', name: 'Netflix Inc.', domain: 'netflix.com', exchange: 'NASDAQ', price: 689.45, startingPrice: 689.45 },
   { symbol: 'AMD', name: 'Advanced Micro Devices', domain: 'amd.com', exchange: 'NASDAQ', price: 156.72, startingPrice: 156.72 },
   { symbol: 'DIS', name: 'The Walt Disney Company', domain: 'disney.com', exchange: 'NYSE', price: 111.38, startingPrice: 111.38 },
+  { symbol: 'HSBK', name: 'Halyk Bank', domain: 'halykbank.kz', exchange: 'KASE', price: 21.45, startingPrice: 21.45 },
+  { symbol: 'KSPI', name: 'Kaspi.kz', domain: 'kaspi.kz', exchange: 'NASDAQ / KASE', price: 96.38, startingPrice: 96.38 },
+  { symbol: 'KZAP', name: 'Казатомпром', domain: 'kazatomprom.kz', exchange: 'KASE / LSE', price: 37.24, startingPrice: 37.24 },
+  { symbol: 'KMGZ', name: 'КазМунайГаз', domain: 'kmg.kz', exchange: 'KASE', price: 28.61, startingPrice: 28.61 },
+  { symbol: 'KEGC', name: 'KEGOC', domain: 'kegoc.kz', exchange: 'KASE', price: 3.92, startingPrice: 3.92 },
+  { symbol: 'KZTK', name: 'Казахтелеком', domain: 'telecom.kz', exchange: 'KASE', price: 73.84, startingPrice: 73.84 },
+  { symbol: 'KZTO', name: 'КазТрансОйл', domain: 'kaztransoil.kz', exchange: 'KASE', price: 1.62, startingPrice: 1.62 },
+  { symbol: 'CCBN', name: 'Банк ЦентрКредит', domain: 'bcc.kz', exchange: 'KASE', price: 1.28, startingPrice: 1.28 },
+  { symbol: 'AIRA', name: 'Air Astana', domain: 'airastana.com', exchange: 'KASE / LSE', price: 6.47, startingPrice: 6.47 },
+  { symbol: 'KCEL', name: 'Kcell', domain: 'kcell.kz', exchange: 'KASE', price: 3.18, startingPrice: 3.18 },
 ];
 
 export const memberQuotes: MarketQuote[] = [
