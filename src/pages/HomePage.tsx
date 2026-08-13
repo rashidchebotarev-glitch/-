@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CoachFire } from '../components/CoachFire';
 import { DayTransition } from '../components/DayTransition';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
@@ -17,6 +18,7 @@ export function HomePage() {
   const [tradeMessage, setTradeMessage] = useState('Готов к первой сделке');
   const [day, setDay] = useState(1);
   const [isDayTransitionVisible, setIsDayTransitionVisible] = useState(false);
+  const [spyBuyPrice, setSpyBuyPrice] = useState<number | null>(null);
 
   useEffect(() => {
     const marketTimer = window.setInterval(() => {
@@ -55,6 +57,12 @@ export function HomePage() {
     const result = tradeStock(portfolio, quote, action);
     setPortfolio(result.portfolio);
     setTradeMessage(result.message);
+    if (quote.symbol === 'SPY' && action === 'buy' && result.portfolio !== portfolio && spyBuyPrice === null) {
+      setSpyBuyPrice(quote.price);
+    }
+    if (quote.symbol === 'SPY' && action === 'sell' && result.portfolio !== portfolio && (result.portfolio.holdings.SPY ?? 0) === 0) {
+      setSpyBuyPrice(null);
+    }
     if (result.portfolio !== portfolio) {
       if (action === 'buy') playBuySound();
       else playSellSound();
@@ -70,6 +78,8 @@ export function HomePage() {
     (total, quote) => total + quote.price * (portfolio.holdings[quote.symbol] ?? 0),
     0,
   );
+  const spyQuote = quotes.find((quote) => quote.symbol === 'SPY');
+  const canSellSpyForProfit = spyBuyPrice !== null && spyQuote !== undefined && spyQuote.price > spyBuyPrice;
 
   return (
     <main className="market-page">
@@ -96,7 +106,8 @@ export function HomePage() {
           </div>
           <MarketIndicator price={indexPrice} />
           <SimulationPanel day={day} portfolioValue={portfolioValue} />
-          <section className="quotes"><h2>Котировки</h2>{quotes.map((quote) => <QuoteCard key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}</section>
+          <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} portfolioValue={portfolioValue} />
+          <section className="quotes"><h2>Котировки</h2>{quotes.map((quote) => <QuoteCard coachAction={quote.symbol !== 'SPY' ? null : (portfolio.holdings.SPY ?? 0) === 0 ? 'buy' : canSellSpyForProfit ? 'sell' : null} key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}</section>
         </section>
       )}
     </main>
