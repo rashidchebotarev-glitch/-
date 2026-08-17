@@ -3,6 +3,7 @@ import { Link } from 'wouter';
 import { CoachFire } from '../components/CoachFire';
 import { AgeSelection } from '../components/AgeSelection';
 import { CharacterSelection } from '../components/CharacterSelection';
+import { DeviceSelection } from '../components/DeviceSelection';
 import { DayTransition } from '../components/DayTransition';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
@@ -22,14 +23,17 @@ import { createMarketNews, type MarketNews } from '../lib/news';
 import { playBuySound, playEnterSound, playSellSound } from '../lib/sounds';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { PlayerCharacter } from '../lib/player';
+import type { GameDevice } from '../lib/device';
 import { useMarketSimulation } from '../hooks/useMarketSimulation';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
   const [isAgeSelectionVisible, setIsAgeSelectionVisible] = useState(false);
   const [isCharacterSelectionVisible, setIsCharacterSelectionVisible] = useState(false);
+  const [isDeviceSelectionVisible, setIsDeviceSelectionVisible] = useState(false);
   const [isStoryIntroVisible, setIsStoryIntroVisible] = useState(false);
   const [character, setCharacter] = useState<PlayerCharacter | null>(null);
+  const [device, setDevice] = useState<GameDevice | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const { indexPrice, quotes, setQuotes } = useMarketSimulation();
   const [portfolio, setPortfolio] = useState(initialPortfolio);
@@ -109,6 +113,12 @@ export function HomePage() {
 
   function selectAge() {
     setIsAgeSelectionVisible(false);
+    setIsDeviceSelectionVisible(true);
+  }
+
+  function selectDevice(selectedDevice: GameDevice) {
+    setDevice(selectedDevice);
+    setIsDeviceSelectionVisible(false);
     setIsCharacterSelectionVisible(true);
   }
 
@@ -136,13 +146,13 @@ export function HomePage() {
   });
 
   return (
-    <main className="market-page">
+    <main className={`market-page ${device?.id === 'phone' ? 'phone-layout' : ''}`}>
       <div className="background-orbs" aria-hidden="true"><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /><i /></div>
       <DayTransition day={day} isVisible={isDayTransitionVisible} />
       {started && <MissionPopup isVisible={isFirstMissionVisible} onClose={() => setIsFirstMissionVisible(false)} />}
       <header className="market-header"><span className="market-logo">NORTH<span>•</span>MARKET</span><div className="header-tools">{character && <span className="player-badge">{character.avatar} {character.name}</span>}<span className="market-status">● Рынок открыт · LIVE</span></div></header>
       <MarketNewsPopup news={marketNews} onClose={() => setMarketNews(null)} />
-      {!started && !isAgeSelectionVisible && !isCharacterSelectionVisible && !isStoryIntroVisible ? (
+      {!started && !isAgeSelectionVisible && !isDeviceSelectionVisible && !isCharacterSelectionVisible && !isStoryIntroVisible ? (
         <section className="market-welcome">
           <div className="welcome-content">
             <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
@@ -158,6 +168,8 @@ export function HomePage() {
         </section>
       ) : isAgeSelectionVisible ? (
         <AgeSelection onSelect={selectAge} />
+      ) : isDeviceSelectionVisible ? (
+        <DeviceSelection onSelect={selectDevice} />
       ) : isCharacterSelectionVisible ? (
         <CharacterSelection onSelect={selectCharacter} />
       ) : isStoryIntroVisible && character !== null ? (
