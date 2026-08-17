@@ -6,6 +6,7 @@ import { CharacterSelection } from '../components/CharacterSelection';
 import { DayTransition } from '../components/DayTransition';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
+import { MissionHook } from '../components/MissionHook';
 import { MissionPopup } from '../components/MissionPopup';
 import { MarketNewsPopup } from '../components/MarketNewsPopup';
 import { QuoteCard } from '../components/QuoteCard';
@@ -15,12 +16,13 @@ import { PlayerLevel } from '../components/PlayerLevel';
 import { SimulationPanel } from '../components/SimulationPanel';
 import { StoryIntro } from '../components/StoryIntro';
 import rashidMug from '../assets/rashid-mug.png';
-import { formatChange, initialQuotes, memberQuotes, moveMarket, movePrice } from '../lib/market';
+import { formatChange, initialQuotes, memberQuotes } from '../lib/market';
 import { initialPortfolio, tradeStock, type TradeAction } from '../lib/portfolio';
 import { createMarketNews, type MarketNews } from '../lib/news';
 import { playBuySound, playEnterSound, playSellSound } from '../lib/sounds';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { PlayerCharacter } from '../lib/player';
+import { useMarketSimulation } from '../hooks/useMarketSimulation';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
@@ -28,9 +30,8 @@ export function HomePage() {
   const [isCharacterSelectionVisible, setIsCharacterSelectionVisible] = useState(false);
   const [isStoryIntroVisible, setIsStoryIntroVisible] = useState(false);
   const [character, setCharacter] = useState<PlayerCharacter | null>(null);
-  const [quotes, setQuotes] = useState(initialQuotes);
   const [isRegistered, setIsRegistered] = useState(false);
-  const [indexPrice, setIndexPrice] = useState(5469.3);
+  const { indexPrice, quotes, setQuotes } = useMarketSimulation();
   const [portfolio, setPortfolio] = useState(initialPortfolio);
   const [tradeMessage, setTradeMessage] = useState('Готов к первой сделке');
   const [day, setDay] = useState(1);
@@ -41,15 +42,6 @@ export function HomePage() {
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [experience, setExperience] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-
-  useEffect(() => {
-    const marketTimer = window.setInterval(() => {
-      setQuotes((currentQuotes) => moveMarket(currentQuotes));
-      setIndexPrice((currentPrice) => movePrice(currentPrice));
-    }, 1000);
-
-    return () => window.clearInterval(marketTimer);
-  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -179,6 +171,7 @@ export function HomePage() {
           </div>
           <MarketIndicator price={indexPrice} />
           <PlayerLevel experience={experience} isFirstQuestComplete={isTrainingComplete} />
+          <MissionHook day={day} isFirstQuestComplete={isTrainingComplete} portfolioValue={portfolioValue} />
           <PortfolioStocks onTrade={handleTrade} portfolio={portfolio} quotes={quotes} />
           <SimulationPanel day={day} portfolioValue={portfolioValue} />
           <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} isTrainingComplete={isTrainingComplete} portfolioValue={portfolioValue} />
