@@ -12,7 +12,7 @@ export function DashboardSidebar() {
         <button onClick={() => scrollToSection('portfolio')}>💼 Мой портфель</button>
         <button onClick={() => scrollToSection('missions')}>⚡ Мои квесты</button>
         <button onClick={() => scrollToSection('quotes')}>⌁ Котировки</button>
-        <Link href="/stocks/SPY">✦ AI помощник</Link>
+        <Link href="/assistant">✦ AI помощник</Link>
       </nav>
       <small>AI поможет выбрать направление для акции.</small>
     </aside>
