@@ -5,9 +5,11 @@ import { AgeSelection } from '../components/AgeSelection';
 import { CharacterSelection } from '../components/CharacterSelection';
 import { DeviceSelection } from '../components/DeviceSelection';
 import { DayTransition } from '../components/DayTransition';
+import { DashboardSidebar } from '../components/DashboardSidebar';
 import { MarketHighlights } from '../components/MarketHighlights';
 import { MarketIndicator } from '../components/MarketIndicator';
 import { MissionHook } from '../components/MissionHook';
+import { MissionPanel } from '../components/MissionPanel';
 import { MissionPopup } from '../components/MissionPopup';
 import { MarketNewsPopup } from '../components/MarketNewsPopup';
 import { QuoteCard } from '../components/QuoteCard';
@@ -25,6 +27,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { PlayerCharacter } from '../lib/player';
 import type { GameDevice } from '../lib/device';
 import { useMarketSimulation } from '../hooks/useMarketSimulation';
+import { missions } from '../lib/missions';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
@@ -45,6 +48,8 @@ export function HomePage() {
   const [spyBuyPrice, setSpyBuyPrice] = useState<number | null>(null);
   const [isTrainingComplete, setIsTrainingComplete] = useState(false);
   const [experience, setExperience] = useState(0);
+  const [activeMission, setActiveMission] = useState(0);
+  const [health, setHealth] = useState(100);
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -104,6 +109,23 @@ export function HomePage() {
       if (action === 'buy') playBuySound();
       else playSellSound();
     }
+    if (action === 'buy' && result.portfolio !== portfolio) {
+      const stockCount = Object.entries(result.portfolio.holdings).filter(([symbol, shares]) => symbol !== 'BND' && shares > 0).length;
+      const currentMission = missions[activeMission];
+      const isComplete = (activeMission === 0)
+        || (activeMission === 1 && quote.symbol === 'BND')
+        || (activeMission === 2 && stockCount >= 3)
+        || (activeMission === 3 && (quote.symbol === 'TSLA' || quote.symbol === 'MSFT'))
+        || (activeMission === 4 && ['AAPL', 'MSFT', 'DIS'].includes(quote.symbol))
+        || (activeMission === 8 && quote.symbol === 'SPY')
+        || (activeMission === 9 && portfolioValue >= 20000);
+      if (isComplete && currentMission) {
+        setExperience((currentExperience) => currentExperience + currentMission.xp);
+        setActiveMission((currentMissionIndex) => currentMissionIndex + 1);
+        setHealth((currentHealth) => Math.min(100, currentHealth + 10));
+        setTradeMessage(`${currentMission.badge} получен! ${currentMission.coach}`);
+      }
+    }
   }
 
   function startSimulation() {
@@ -156,7 +178,7 @@ export function HomePage() {
         <section className="market-welcome">
           <div className="welcome-content">
             <p className="market-kicker">ЛИЧНЫЙ ТРЕЙДИНГ-ТЕРМИНАЛ</p>
-            <h1>Следи за<br /><em>рынком.</em></h1>
+            <h1><em>Разбоготей.</em></h1>
             <p>Котировки, динамика и всё важное — в одном понятном месте.</p>
             <button className="start-button" onClick={startSimulation}>Начать игру <span>→</span></button>
             <Link className="registration-button" href="/auth">Регистрация</Link>
@@ -177,17 +199,23 @@ export function HomePage() {
       ) : (
         <section className="market-dashboard">
           <div className="market-title"><div><p className="market-kicker">ОБЗОР РЫНКА</p><h1>Сегодня</h1></div><button className="back-button" onClick={() => setStarted(false)}>←</button></div>
+          <div className="dashboard-layout">
+          <DashboardSidebar />
+          <div className="dashboard-content">
           <div className="market-grid">
             <article className="chart-card"><div><span>S&P 500 · обновляется каждую секунду</span><strong>{indexPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</strong><b className={indexPrice < 5469.3 ? 'negative' : ''}>{formatChange(indexPrice, 5469.3)}</b></div><svg viewBox="0 0 600 190" aria-label="График рынка"><path d="M0 161 L45 143 L78 150 L121 102 L158 125 L202 91 L241 107 L282 58 L323 83 L366 70 L409 28 L449 46 L494 19 L537 35 L600 4 V190 H0Z" /><polyline points="0,161 45,143 78,150 121,102 158,125 202,91 241,107 282,58 323,83 366,70 409,28 449,46 494,19 537,35 600,4" /></svg></article>
             <article className="balance-card"><span>ТВОЙ БАЛАНС</span><strong>${portfolio.balance.toFixed(2)}</strong><p>{tradeMessage}</p></article>
           </div>
           <MarketIndicator price={indexPrice} />
           <PlayerLevel experience={experience} isFirstQuestComplete={isTrainingComplete} />
-          <MissionHook day={day} isFirstQuestComplete={isTrainingComplete} portfolioValue={portfolioValue} />
-          <PortfolioStocks onTrade={handleTrade} portfolio={portfolio} quotes={quotes} />
+          <div id="missions"><MissionHook day={day} isFirstQuestComplete={isTrainingComplete} portfolioValue={portfolioValue} /></div>
+          <MissionPanel activeMission={activeMission} experience={experience} health={health} />
+          <div id="portfolio"><PortfolioStocks onTrade={handleTrade} portfolio={portfolio} quotes={quotes} /></div>
           <SimulationPanel day={day} portfolioValue={portfolioValue} />
           <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} isTrainingComplete={isTrainingComplete} portfolioValue={portfolioValue} />
-          <section className="quotes"><div className="quotes-heading"><h2>Котировки</h2><QuoteSearch onChange={setSearchQuery} value={searchQuery} /></div>{visibleQuotes.map((quote) => <QuoteCard coachAction={isTrainingComplete || quote.symbol !== 'SPY' ? null : (portfolio.holdings.SPY ?? 0) === 0 ? 'buy' : canSellSpyForProfit ? 'sell' : null} key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}{visibleQuotes.length === 0 && <p className="quote-search-empty">Ничего не найдено. Попробуй другой запрос.</p>}{isRegistered && <p className="member-market-note">✓ Международный рынок открыт: Китай и Япония</p>}</section>
+          <section className="quotes" id="quotes"><div className="quotes-heading"><h2>Котировки</h2><QuoteSearch onChange={setSearchQuery} value={searchQuery} /></div>{visibleQuotes.map((quote) => <QuoteCard coachAction={isTrainingComplete || quote.symbol !== 'SPY' ? null : (portfolio.holdings.SPY ?? 0) === 0 ? 'buy' : canSellSpyForProfit ? 'sell' : null} key={quote.symbol} onTrade={handleTrade} quote={quote} shares={portfolio.holdings[quote.symbol] ?? 0} />)}{visibleQuotes.length === 0 && <p className="quote-search-empty">Ничего не найдено. Попробуй другой запрос.</p>}{isRegistered && <p className="member-market-note">✓ Международный рынок открыт: Китай и Япония</p>}</section>
+          </div>
+          </div>
         </section>
       )}
     </main>

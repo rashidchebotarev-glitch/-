@@ -1,4 +1,5 @@
 export type MarketQuote = {
+  assetType?: 'bond' | 'stock';
   domain: string;
   exchange: string;
   name: string;
@@ -8,6 +9,7 @@ export type MarketQuote = {
 };
 
 export const initialQuotes: MarketQuote[] = [
+  { symbol: 'BND', name: 'Vanguard Total Bond Market ETF', domain: 'vanguard.com', exchange: 'NASDAQ', price: 72.14, startingPrice: 72.14, assetType: 'bond' },
   { symbol: 'SPY', name: 'S&P 500 ETF', domain: 'ssga.com', exchange: 'NYSE Arca', price: 546.93, startingPrice: 546.93 },
   { symbol: 'AAPL', name: 'Apple Inc.', domain: 'apple.com', exchange: 'NASDAQ', price: 218.42, startingPrice: 218.42 },
   { symbol: 'NVDA', name: 'NVIDIA Corp.', domain: 'nvidia.com', exchange: 'NASDAQ', price: 142.18, startingPrice: 142.18 },
