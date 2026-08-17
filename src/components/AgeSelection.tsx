@@ -1,10 +1,10 @@
 import ageChoices from '../assets/age-choices.png';
 
 type AgeSelectionProps = {
-  onSelect: () => void;
+  onSelect: (group: 'junior' | 'senior') => void;
 };
 
-const ages = ['8–12 лет', '13–16 лет'];
+const ages = [{ label: '8–12 лет', group: 'junior' as const }, { label: '13–16 лет', group: 'senior' as const }];
 
 export function AgeSelection({ onSelect }: AgeSelectionProps) {
   return (
@@ -14,9 +14,9 @@ export function AgeSelection({ onSelect }: AgeSelectionProps) {
       <p>Выбери возрастную группу — так подсказки тренера будут понятнее.</p>
       <div className="age-cards">
         {ages.map((age, index) => (
-          <button key={age} onClick={onSelect}>
+          <button key={age.group} onClick={() => onSelect(age.group)}>
             <img alt="" src={ageChoices} style={{ objectPosition: `${index * 50}% center` }} />
-            <strong>{age}</strong>
+            <strong>{age.label}</strong>
             <span>Выбрать →</span>
           </button>
         ))}

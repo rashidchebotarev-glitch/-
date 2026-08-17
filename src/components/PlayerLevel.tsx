@@ -3,7 +3,7 @@ type PlayerLevelProps = {
   isFirstQuestComplete: boolean;
 };
 
-const levelThresholds = [0, 50, 100, 150, 250];
+const levelThresholds = [0, 50, 100, 150, 250, 350, 450, 600, 800];
 
 export function PlayerLevel({ experience, isFirstQuestComplete }: PlayerLevelProps) {
   const levelIndex = levelThresholds.reduce((currentLevel, threshold, index) => (

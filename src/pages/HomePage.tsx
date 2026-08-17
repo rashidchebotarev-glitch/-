@@ -27,7 +27,7 @@ import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { PlayerCharacter } from '../lib/player';
 import type { GameDevice } from '../lib/device';
 import { useMarketSimulation } from '../hooks/useMarketSimulation';
-import { missions } from '../lib/missions';
+import { advancedMissions, missions } from '../lib/missions';
 
 export function HomePage() {
   const [started, setStarted] = useState(false);
@@ -50,6 +50,7 @@ export function HomePage() {
   const [experience, setExperience] = useState(0);
   const [activeMission, setActiveMission] = useState(0);
   const [health, setHealth] = useState(100);
+  const [ageGroup, setAgeGroup] = useState<'junior' | 'senior'>('junior');
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
@@ -111,7 +112,7 @@ export function HomePage() {
     }
     if (action === 'buy' && result.portfolio !== portfolio) {
       const stockCount = Object.entries(result.portfolio.holdings).filter(([symbol, shares]) => symbol !== 'BND' && shares > 0).length;
-      const currentMission = missions[activeMission];
+      const currentMission = (ageGroup === 'senior' ? advancedMissions : missions)[activeMission];
       const isComplete = (activeMission === 0)
         || (activeMission === 1 && quote.symbol === 'BND')
         || (activeMission === 2 && stockCount >= 3)
@@ -133,7 +134,9 @@ export function HomePage() {
     setIsAgeSelectionVisible(true);
   }
 
-  function selectAge() {
+  function selectAge(group: 'junior' | 'senior') {
+    setAgeGroup(group);
+    setExperience(group === 'senior' ? 300 : 0);
     setIsAgeSelectionVisible(false);
     setIsDeviceSelectionVisible(true);
   }
@@ -162,6 +165,7 @@ export function HomePage() {
   );
   const spyQuote = quotes.find((quote) => quote.symbol === 'SPY');
   const canSellSpyForProfit = spyBuyPrice !== null && spyQuote !== undefined && spyQuote.price > spyBuyPrice;
+  const missionList = ageGroup === 'senior' ? advancedMissions : missions;
   const visibleQuotes = quotes.filter((quote) => {
     const query = searchQuery.trim().toLowerCase();
     return query === '' || [quote.symbol, quote.name, quote.exchange].some((value) => value.toLowerCase().includes(query));
@@ -209,7 +213,7 @@ export function HomePage() {
           <MarketIndicator price={indexPrice} />
           <PlayerLevel experience={experience} isFirstQuestComplete={isTrainingComplete} />
           <div id="missions"><MissionHook day={day} isFirstQuestComplete={isTrainingComplete} portfolioValue={portfolioValue} /></div>
-          <MissionPanel activeMission={activeMission} experience={experience} health={health} />
+          <MissionPanel activeMission={activeMission} experience={experience} health={health} missionList={missionList} />
           <div id="portfolio"><PortfolioStocks onTrade={handleTrade} portfolio={portfolio} quotes={quotes} /></div>
           <SimulationPanel day={day} portfolioValue={portfolioValue} />
           <CoachFire canSellForProfit={canSellSpyForProfit} day={day} hasBoughtSpy={(portfolio.holdings.SPY ?? 0) > 0} isTrainingComplete={isTrainingComplete} portfolioValue={portfolioValue} />
