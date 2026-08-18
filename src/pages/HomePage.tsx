@@ -18,19 +18,19 @@ import { PortfolioStocks } from '../components/PortfolioStocks';
 import { PlayerLevel } from '../components/PlayerLevel';
 import { SimulationPanel } from '../components/SimulationPanel';
 import { StoryIntro } from '../components/StoryIntro';
-import rashidMug from '../assets/rashid-mug.png';
+import rashidMug from '../assets/rashid-mug-historical.png';
 import { formatChange, initialQuotes, memberQuotes } from '../lib/market';
-import { initialPortfolio, tradeStock, type TradeAction } from '../lib/portfolio';
+import { tradeStock, type TradeAction } from '../lib/portfolio';
 import { createMarketNews, type MarketNews } from '../lib/news';
 import { playBuySound, playEnterSound, playSellSound } from '../lib/sounds';
 import { isSupabaseConfigured, supabase } from '../lib/supabase';
 import type { PlayerCharacter } from '../lib/player';
 import type { GameDevice } from '../lib/device';
-import { useMarketSimulation } from '../hooks/useMarketSimulation';
+import { useGameData } from '../lib/gameData';
 import { advancedMissions, missions } from '../lib/missions';
 
 export function HomePage() {
-  const [started, setStarted] = useState(false);
+  const [started, setStarted] = useState(() => sessionStorage.getItem('north-market-game-started') === 'true');
   const [isAgeSelectionVisible, setIsAgeSelectionVisible] = useState(false);
   const [isCharacterSelectionVisible, setIsCharacterSelectionVisible] = useState(false);
   const [isDeviceSelectionVisible, setIsDeviceSelectionVisible] = useState(false);
@@ -38,8 +38,7 @@ export function HomePage() {
   const [character, setCharacter] = useState<PlayerCharacter | null>(null);
   const [device, setDevice] = useState<GameDevice | null>(null);
   const [isRegistered, setIsRegistered] = useState(false);
-  const { indexPrice, quotes, setQuotes } = useMarketSimulation();
-  const [portfolio, setPortfolio] = useState(initialPortfolio);
+  const { indexPrice, portfolio, quotes, setPortfolio, setQuotes } = useGameData();
   const [tradeMessage, setTradeMessage] = useState('Готов к первой сделке');
   const [day, setDay] = useState(1);
   const [isDayTransitionVisible, setIsDayTransitionVisible] = useState(false);
@@ -155,6 +154,7 @@ export function HomePage() {
 
   function startMission() {
     setIsStoryIntroVisible(false);
+    sessionStorage.setItem('north-market-game-started', 'true');
     setStarted(true);
     setIsFirstMissionVisible(true);
   }
@@ -202,7 +202,7 @@ export function HomePage() {
         <StoryIntro character={character} onStart={startMission} />
       ) : (
         <section className="market-dashboard">
-          <div className="market-title"><div><p className="market-kicker">ОБЗОР РЫНКА</p><h1>Сегодня</h1></div><button className="back-button" onClick={() => setStarted(false)}>←</button></div>
+          <div className="market-title"><div><p className="market-kicker">ОБЗОР РЫНКА</p><h1>Сегодня</h1></div><button className="back-button" onClick={() => { sessionStorage.removeItem('north-market-game-started'); setStarted(false); }}>←</button></div>
           <div className="dashboard-layout">
           <DashboardSidebar />
           <div className="dashboard-content">

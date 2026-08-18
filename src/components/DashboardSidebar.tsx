@@ -9,8 +9,8 @@ export function DashboardSidebar() {
     <aside className="dashboard-sidebar">
       <p>РАЗДЕЛЫ</p>
       <nav>
-        <button onClick={() => scrollToSection('portfolio')}>💼 Мой портфель</button>
-        <button onClick={() => scrollToSection('missions')}>⚡ Мои квесты</button>
+        <Link href="/portfolio">💼 Мой портфель</Link>
+        <Link href="/missions">⚡ Мои квесты</Link>
         <button onClick={() => scrollToSection('quotes')}>⌁ Котировки</button>
         <Link href="/assistant">✦ AI помощник</Link>
       </nav>
